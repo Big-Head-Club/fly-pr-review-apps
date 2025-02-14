@@ -25,18 +25,18 @@ org="${INPUT_ORG:-${FLY_ORG:-personal}}"
 image="$INPUT_IMAGE"
 config="${INPUT_CONFIG:-fly.toml}"
 
-vite_api_url="$INPUT_VITE_API_URL"
-vite_should_proxy_s3="$INPUT_VITE_SHOULD_PROXY_S3"
+# vite_api_url="$INPUT_VITE_API_URL"
+# vite_should_proxy_s3="$INPUT_VITE_SHOULD_PROXY_S3"
 vite_use_dummy_data="$INPUT_VITE_USE_DUMMY_DATA"
 node_env="$INPUT_NODE_ENV"
 
-echo "vite_api_url=$vite_api_url"
-echo "vite_should_proxy_s3=$vite_should_proxy_s3"
+# echo "vite_api_url=$vite_api_url"
+# echo "vite_should_proxy_s3=$vite_should_proxy_s3"
 echo "vite_use_dummy_data=$vite_use_dummy_data"
 echo "node_env=$node_env"
 
 # Error out if any of the variables are empty
-if [ -z "$vite_api_url" ] || [ -z "$vite_should_proxy_s3" ] || [ -z "$vite_use_dummy_data" ] || [ -z "$node_env" ]; then
+if [ -z "$vite_use_dummy_data" ] || [ -z "$node_env" ]; then
   echo "Error: One or more variables are empty. Please check your environment variables."
   exit 1
 fi
@@ -72,9 +72,9 @@ fi
 # Trigger the deploy of the new version.
 echo "Contents of config $config file: " && cat "$config"
 if [ -n "$INPUT_VM" ]; then
-  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-size "$INPUT_VMSIZE" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="$vite_api_url" --build-arg VITE_SHOULD_PROXY_S3="$vite_should_proxy_s3" --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV="$node_env"
+  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-size "$INPUT_VMSIZE" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="" --build-arg VITE_SHOULD_PROXY_S3=false --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV="$node_env"
 else
-  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-cpu-kind "$INPUT_CPUKIND" --vm-cpus $INPUT_CPU --vm-memory "$INPUT_MEMORY" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="$vite_api_url" --build-arg VITE_SHOULD_PROXY_S3="$vite_should_proxy_s3" --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV="$node_env"
+  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-cpu-kind "$INPUT_CPUKIND" --vm-cpus $INPUT_CPU --vm-memory "$INPUT_MEMORY" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="" --build-arg VITE_SHOULD_PROXY_S3=false --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV="$node_env"
 fi
 
 # Make some info available to the GitHub workflow.
