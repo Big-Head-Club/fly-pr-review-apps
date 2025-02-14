@@ -67,9 +67,21 @@ fi
 # Copy secrets from the main app to the PR app
 echo "Copying secrets from mop-activity-server to $app"
 
-# Get the secrets directly from the VM
-echo "Getting secrets from VM..."
-secrets_string=$(flyctl ssh console -a mop-activity-server -C "cat .env | grep -E '^(AWS_|VITE_|ACTIVITY_|DATABASE_|DISCORD_)'" | tr '\n' ' ')
+# Step 1: Get all environment variables from the VM
+echo "Getting environment variables from VM..."
+all_env=$(flyctl ssh console -a mop-activity-server -C "printenv")
+echo "All environment variables retrieved:"
+echo "$all_env"
+
+# Step 2: Filter for the secrets we care about
+echo "Filtering for relevant secrets..."
+filtered_secrets=$(echo "$all_env" | grep -E '^(AWS_|VITE_|ACTIVITY_|DATABASE_|DISCORD_)')
+echo "Filtered secrets:"
+echo "$filtered_secrets"
+
+# Step 3: Format into space-separated string for secrets command
+secrets_string=$(echo "$filtered_secrets" | tr '\n' ' ')
+echo "Formatted secrets string length: ${#secrets_string}"
 
 if [ -n "$secrets_string" ]; then
   echo "Setting secrets..."
