@@ -99,6 +99,9 @@ secrets_string="$secrets_string PRODUCTION=false"
 
 # Those two things should get the websockets working
 
+# Remove the VITE_API_URL variable and its value from the secrets string
+secrets_string=$(echo "$secrets_string" | sed '/VITE_API_URL=/d')
+
 # Override the VITE_API_URL variable in the secrets string to 'https://mop-pr-<PR_NUMBER>.fly.dev'
 secrets_string="$secrets_string VITE_API_URL=https://mop-pr-$PR_NUMBER.fly.dev"
 
