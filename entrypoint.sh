@@ -25,10 +25,21 @@ org="${INPUT_ORG:-${FLY_ORG:-personal}}"
 image="$INPUT_IMAGE"
 config="${INPUT_CONFIG:-fly.toml}"
 
-vite_api_url="$VITE_API_URL"
-vite_should_proxy_s3="$VITE_SHOULD_PROXY_S3"
-vite_use_dummy_data="$VITE_USE_DUMMY_DATA"
-node_env="$NODE_ENV"
+vite_api_url="$INPUT_VITE_API_URL"
+vite_should_proxy_s3="$INPUT_VITE_SHOULD_PROXY_S3"
+vite_use_dummy_data="$INPUT_VITE_USE_DUMMY_DATA"
+node_env="$INPUT_NODE_ENV"
+
+echo "vite_api_url=$vite_api_url"
+echo "vite_should_proxy_s3=$vite_should_proxy_s3"
+echo "vite_use_dummy_data=$vite_use_dummy_data"
+echo "node_env=$node_env"
+
+# Error out if any of the variables are empty
+if [ -z "$vite_api_url" ] || [ -z "$vite_should_proxy_s3" ] || [ -z "$vite_use_dummy_data" ] || [ -z "$node_env" ]; then
+  echo "Error: One or more variables are empty. Please check your environment variables."
+  exit 1
+fi
 
 if ! echo "$app" | grep "$PR_NUMBER"; then
   echo "For safety, this action requires the app's name to contain the PR number."

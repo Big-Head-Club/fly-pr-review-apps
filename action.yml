@@ -40,3 +40,11 @@ inputs:
     default: false
   launch_options:
     description: Additional options to pass to the Fly launch command at creation
+  vite_api_url:
+    description: The URL of the Vite API
+  vite_should_proxy_s3:
+    description: Whether the Vite app should proxy S3 requests
+  vite_use_dummy_data:
+    description: Whether the Vite app should use dummy data
+  node_env:
+    description: The environment to run the Vite app in
