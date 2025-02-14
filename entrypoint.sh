@@ -66,7 +66,27 @@ fi
 
 # Copy secrets from the main app to the PR app
 echo "Copying secrets from mop-activity-server to $app"
-flyctl secrets list -a mop-activity-server | grep '=' | sed 's/^[[:space:]]*//' | tr '\n' ' ' | xargs flyctl secrets set -a "$app"
+# First save the secrets to a temporary file
+flyctl secrets list -a mop-activity-server > temp_secrets.txt
+echo "Raw secrets:"
+cat temp_secrets.txt
+
+# Format the secrets and save to another temp file
+grep '=' temp_secrets.txt | sed 's/^[[:space:]]*//' > formatted_secrets.txt
+echo "Formatted secrets:"
+cat formatted_secrets.txt
+
+# Now use the formatted secrets
+secrets_string=$(cat formatted_secrets.txt | tr '\n' ' ')
+echo "Will execute: flyctl secrets set -a $app $secrets_string"
+if [ -n "$secrets_string" ]; then
+  flyctl secrets set -a "$app" $secrets_string
+else
+  echo "No secrets found to copy"
+fi
+
+# Clean up temp files
+rm temp_secrets.txt formatted_secrets.txt
 
 # Attach postgres cluster to the app if specified.
 if [ -n "$INPUT_POSTGRES" ]; then
