@@ -67,53 +67,17 @@ fi
 # Copy secrets from the main app to the PR app
 echo "Copying secrets from mop-activity-server to $app"
 
-# Create a temporary directory
-TEMP_DIR=$(mktemp -d)
-cd "$TEMP_DIR"
+# Get the secrets directly from the VM
+echo "Getting secrets from VM..."
+secrets_string=$(flyctl ssh console -a mop-activity-server -C "env | grep -E '^(AWS_|VITE_|ACTIVITY_|DATABASE_|DISCORD_|)'" | tr '\n' ' ')
 
-# Get list of secret names first
-echo "Getting secret names..."
-flyctl secrets list -a mop-activity-server | awk '/=/ {print $1}' > secret_names.txt
-
-# Create a temporary script to read the secrets
-cat > read_secrets.sh << 'EOF'
-#!/bin/sh
-while IFS= read -r secret_name; do
-  val=$(printenv "$secret_name")
-  if [ -n "$val" ]; then
-    echo "$secret_name=$val"
-  fi
-done < secret_names.txt
-EOF
-
-echo "Copying files to VM..."
-# First ensure we can connect to a VM
-if ! flyctl ssh console -a mop-activity-server -C "pwd"; then
-  echo "Failed to connect to VM"
-  exit 1
-fi
-
-# Copy files TO the VM first
-flyctl ssh console -a mop-activity-server -C "mkdir -p /tmp/secrets"
-cat secret_names.txt | flyctl ssh console -a mop-activity-server -C "cat > /tmp/secrets/secret_names.txt"
-cat read_secrets.sh | flyctl ssh console -a mop-activity-server -C "cat > /tmp/secrets/read_secrets.sh"
-
-# Now execute the script
-flyctl ssh console -a mop-activity-server -C "chmod +x /tmp/secrets/read_secrets.sh && cd /tmp/secrets && ./read_secrets.sh" > secrets_with_values.txt
-
-# Format and set the secrets
-if [ -s secrets_with_values.txt ]; then
+if [ -n "$secrets_string" ]; then
   echo "Setting secrets..."
-  secrets_string=$(cat secrets_with_values.txt | tr '\n' ' ')
   echo "Will execute: flyctl secrets set -a $app [REDACTED]"
   flyctl secrets set -a "$app" $secrets_string --detach
 else
   echo "No secrets found to copy"
 fi
-
-# Clean up
-cd -
-rm -rf "$TEMP_DIR"
 
 # Attach postgres cluster to the app if specified.
 if [ -n "$INPUT_POSTGRES" ]; then
