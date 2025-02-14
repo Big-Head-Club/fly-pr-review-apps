@@ -25,6 +25,11 @@ org="${INPUT_ORG:-${FLY_ORG:-personal}}"
 image="$INPUT_IMAGE"
 config="${INPUT_CONFIG:-fly.toml}"
 
+vite_api_url="$VITE_API_URL"
+vite_should_proxy_s3="$VITE_SHOULD_PROXY_S3"
+vite_use_dummy_data="$VITE_USE_DUMMY_DATA"
+node_env="$NODE_ENV"
+
 if ! echo "$app" | grep "$PR_NUMBER"; then
   echo "For safety, this action requires the app's name to contain the PR number."
   exit 1
@@ -56,9 +61,9 @@ fi
 # Trigger the deploy of the new version.
 echo "Contents of config $config file: " && cat "$config"
 if [ -n "$INPUT_VM" ]; then
-  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-size "$INPUT_VMSIZE"
+  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-size "$INPUT_VMSIZE" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="$vite_api_url" --build-arg VITE_SHOULD_PROXY_S3="$vite_should_proxy_s3" --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV="$node_env"
 else
-  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-cpu-kind "$INPUT_CPUKIND" --vm-cpus $INPUT_CPU --vm-memory "$INPUT_MEMORY"
+  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-cpu-kind "$INPUT_CPUKIND" --vm-cpus $INPUT_CPU --vm-memory "$INPUT_MEMORY" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="$vite_api_url" --build-arg VITE_SHOULD_PROXY_S3="$vite_should_proxy_s3" --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV="$node_env"
 fi
 
 # Make some info available to the GitHub workflow.
