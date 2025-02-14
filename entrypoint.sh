@@ -75,7 +75,7 @@ echo "$all_env"
 
 # Step 2: Filter for the secrets we care about
 echo "Filtering for relevant secrets..."
-filtered_secrets=$(echo "$all_env" | grep -E '^(AWS_|VITE_|ACTIVITY_|DATABASE_|DISCORD_)')
+filtered_secrets=$(echo "$all_env" | grep -E '^(ACTIVITY_|AWS_|DATABASE_|DISCORD_|VITE_)')
 echo "Filtered secrets:"
 echo "$filtered_secrets"
 
@@ -110,9 +110,9 @@ fi
 # Trigger the deploy of the new version.
 echo "Contents of config $config file: " && cat "$config"
 if [ -n "$INPUT_VM" ]; then
-  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-size "$INPUT_VMSIZE" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="" --build-arg VITE_SHOULD_PROXY_S3=false --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV=development
+  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-size "$INPUT_VMSIZE" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL=https://mop-pr-$PR_NUMBER.fly.dev/ --build-arg VITE_SHOULD_PROXY_S3=false --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV=development
 else
-  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-cpu-kind "$INPUT_CPUKIND" --vm-cpus $INPUT_CPU --vm-memory "$INPUT_MEMORY" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL="" --build-arg VITE_SHOULD_PROXY_S3=false --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV=development
+  flyctl deploy --config "$config" --app "$app" --regions "$region" --image "$image" --strategy immediate --ha=$INPUT_HA --vm-cpu-kind "$INPUT_CPUKIND" --vm-cpus $INPUT_CPU --vm-memory "$INPUT_MEMORY" --dockerfile activity-server.Dockerfile --build-arg VITE_API_URL=https://mop-pr-$PR_NUMBER.fly.dev/ --build-arg VITE_SHOULD_PROXY_S3=false --build-arg VITE_USE_DUMMY_DATA="$vite_use_dummy_data" --build-arg NODE_ENV=development
 fi
 
 # Make some info available to the GitHub workflow.
