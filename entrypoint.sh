@@ -95,8 +95,8 @@ fi
 
 # Copy and execute files one at a time
 flyctl ssh console -a mop-activity-server -C "mkdir -p /tmp/secrets"
-flyctl ssh console -a mop-activity-server -C "cat > /tmp/secrets/secret_names.txt" < secret_names.txt
-flyctl ssh console -a mop-activity-server -C "cat > /tmp/secrets/read_secrets.sh" < read_secrets.sh
+flyctl ssh console -a mop-activity-server -C "cat /tmp/secrets/secret_names.txt" > secret_names.txt
+flyctl ssh console -a mop-activity-server -C "cat /tmp/secrets/read_secrets.sh" > read_secrets.sh
 flyctl ssh console -a mop-activity-server -C "chmod +x /tmp/secrets/read_secrets.sh && cd /tmp/secrets && ./read_secrets.sh" > secrets_with_values.txt
 
 # Format and set the secrets
