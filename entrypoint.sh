@@ -66,27 +66,34 @@ fi
 
 # Copy secrets from the main app to the PR app
 echo "Copying secrets from mop-activity-server to $app"
-# First save the secrets to a temporary file
-flyctl secrets list -a mop-activity-server > temp_secrets.txt
-echo "Raw secrets:"
-cat temp_secrets.txt
 
-# Format the secrets and save to another temp file
-grep '=' temp_secrets.txt | sed 's/^[[:space:]]*//' > formatted_secrets.txt
-echo "Formatted secrets:"
-cat formatted_secrets.txt
+# Get list of secret names first
+flyctl secrets list -a mop-activity-server | grep '=' | sed 's/^[[:space:]]*//' | cut -d' ' -f1 > secret_names.txt
 
-# Now use the formatted secrets
-secrets_string=$(cat formatted_secrets.txt | tr '\n' ' ')
+# Create a temporary script to read the secrets
+cat > read_secrets.sh << 'EOF'
+#!/bin/sh
+while IFS= read -r secret_name; do
+  echo "$secret_name=$(printenv "$secret_name")"
+done < /root/secret_names.txt
+EOF
+
+# Copy the files to the VM and execute
+flyctl ssh console -a mop-activity-server -C "cat > /root/secret_names.txt" < secret_names.txt
+flyctl ssh console -a mop-activity-server -C "cat > /root/read_secrets.sh" < read_secrets.sh
+flyctl ssh console -a mop-activity-server -C "chmod +x /root/read_secrets.sh && /root/read_secrets.sh" > secrets_with_values.txt
+
+# Format and set the secrets
+secrets_string=$(cat secrets_with_values.txt | tr '\n' ' ')
 echo "Will execute: flyctl secrets set -a $app $secrets_string"
 if [ -n "$secrets_string" ]; then
-  flyctl secrets set -a "$app" $secrets_string
+  flyctl secrets set -a "$app" $secrets_string --detach
 else
   echo "No secrets found to copy"
 fi
 
 # Clean up temp files
-rm temp_secrets.txt formatted_secrets.txt
+rm secret_names.txt read_secrets.sh secrets_with_values.txt
 
 # Attach postgres cluster to the app if specified.
 if [ -n "$INPUT_POSTGRES" ]; then
