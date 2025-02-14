@@ -66,7 +66,7 @@ fi
 
 # Copy secrets from the main app to the PR app
 echo "Copying secrets from mop-activity-server to $app"
-flyctl secrets list -a mop-activity-server | flyctl secrets set --a "$app"
+flyctl secrets list -a mop-activity-server | flyctl secrets set -a "$app"
 
 # Attach postgres cluster to the app if specified.
 if [ -n "$INPUT_POSTGRES" ]; then
