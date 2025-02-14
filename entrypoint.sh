@@ -91,6 +91,17 @@ else
   echo "No secrets found to copy"
 fi
 
+# Add a NODE_ENV variable to the secrets string with 'development'
+secrets_string="$secrets_string NODE_ENV=development"
+
+# Add a PRODUCTION environment variable to the secrets string with 'false'
+secrets_string="$secrets_string PRODUCTION=false"
+
+# Those two things should get the websockets working
+
+# Override the VITE_API_URL variable in the secrets string to 'https://mop-pr-<PR_NUMBER>.fly.dev/'
+secrets_string="$secrets_string VITE_API_URL=https://mop-pr-$PR_NUMBER.fly.dev/"
+
 # Attach postgres cluster to the app if specified.
 if [ -n "$INPUT_POSTGRES" ]; then
   flyctl postgres attach "$INPUT_POSTGRES" --app "$app" || true
