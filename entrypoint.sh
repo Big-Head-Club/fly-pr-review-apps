@@ -64,6 +64,10 @@ if [ -n "$INPUT_SECRETS" ]; then
   echo $INPUT_SECRETS | tr " " "\n" | flyctl secrets import --app "$app"
 fi
 
+# Copy secrets from the main app to the PR app
+echo "Copying secrets from mop-activity-server to $app"
+flyctl secrets list -a mop-activity-server | flyctl secrets set --a "$app"
+
 # Attach postgres cluster to the app if specified.
 if [ -n "$INPUT_POSTGRES" ]; then
   flyctl postgres attach "$INPUT_POSTGRES" --app "$app" || true
