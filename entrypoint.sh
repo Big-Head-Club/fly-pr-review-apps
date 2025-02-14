@@ -69,7 +69,7 @@ echo "Copying secrets from mop-activity-server to $app"
 
 # Get the secrets directly from the VM
 echo "Getting secrets from VM..."
-secrets_string=$(flyctl ssh console -a mop-activity-server -C "env | grep -E '^(AWS_|VITE_|ACTIVITY_|DATABASE_|DISCORD_|)'" | tr '\n' ' ')
+secrets_string=$(flyctl ssh console -a mop-activity-server -C "cat .env | grep -E '^(AWS_|VITE_|ACTIVITY_|DATABASE_|DISCORD_)'" | tr '\n' ' ')
 
 if [ -n "$secrets_string" ]; then
   echo "Setting secrets..."
